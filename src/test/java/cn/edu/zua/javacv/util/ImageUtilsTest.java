@@ -77,6 +77,20 @@ public class ImageUtilsTest {
         showImg(result);
     }
 
+    @Test
+    public void testRemoveBlackEdge() {
+        Mat mat = Imgcodecs.imread("/tmp/999.jpg");
+        Mat result = ImageUtils.removeBlackEdge(mat);
+        showImg(result);
+    }
+
+    @Test
+    public void testRemoveBlackEdge2() {
+        Mat mat = Imgcodecs.imread("/tmp/999.jpg");
+        Mat result = ImageUtils.removeBlackEdge(mat, 5);
+        showImg(result);
+    }
+
     // ----------------显示图片
 
     private void showImg(Mat mat) {

@@ -19,6 +19,11 @@ import java.io.InputStream;
  * @date 2018/12/14
  */
 public class ImageUtils {
+    /**
+     * 去黑边"全黑"阈值
+     */
+    private static final int BLACK_VALUE = 5;
+
     private ImageUtils() {
     }
 
@@ -149,6 +154,101 @@ public class ImageUtils {
         Mat gray = new Mat();
         Imgproc.cvtColor(src, gray, Imgproc.COLOR_BGR2GRAY);
         return gray;
+    }
+
+    /**
+     * 去除图片黑边，若无黑边，则原图返回。默认“全黑”阈值为 {@code BLACK_VALUE}
+     *
+     * @param srcMat 预去除黑边的Mat
+     * @return 去除黑边之后的Mat
+     */
+    public static Mat removeBlackEdge(Mat srcMat) {
+        return removeBlackEdge(srcMat, BLACK_VALUE);
+    }
+
+    /**
+     * 去除图片黑边，若无黑边，则原图返回。
+     *
+     * @param blackValue 一般低于5的已经是很黑的颜色了
+     * @param srcMat     源Mat对象
+     * @return Mat对象
+     */
+    public static Mat removeBlackEdge(Mat srcMat, int blackValue) {
+        // 预截取，默认播放条等情况的处理
+        Mat smallMat = cut(srcMat, (int) (srcMat.width() * 0.02), (int) (srcMat.height() * 0.02));
+        // 灰度
+        Mat grayMat = gray(smallMat);
+        int topRow = 0;
+        int leftCol = 0;
+        int rightCol = grayMat.width() - 1;
+        int bottomRow = grayMat.height() - 1;
+
+        // 上方黑边判断
+        for (int row = 0; row < grayMat.height(); row++) {
+            // 判断当前行是否基本“全黑”，阈值自定义；
+            if (sum(grayMat.row(row)) / grayMat.width() < blackValue) {
+                // 更新截取条件
+                topRow = row;
+            } else {
+                break;
+            }
+        }
+        // 左边黑边判断
+        for (int col = 0; col < grayMat.width(); col++) {
+            // 判断当前列是否基本“全黑”，阈值自定义；
+            if (sum(grayMat.col(col)) / grayMat.height() < blackValue) {
+                // 更新截取条件
+                leftCol = col;
+            } else {
+                break;
+            }
+        }
+        // 右边黑边判断
+        for (int col = grayMat.width() - 1; col > 0; col--) {
+            // 判断当前列是否基本“全黑”，阈值自定义；
+            if (sum(grayMat.col(col)) / grayMat.height() < blackValue) {
+                // 更新截取条件
+                rightCol = col;
+            } else {
+                break;
+            }
+        }
+        // 下方黑边判断
+        for (int row = grayMat.height() - 1; row > 0; row--) {
+            // 判断当前行是否基本“全黑”，阈值自定义；
+            if (sum(grayMat.row(row)) / grayMat.width() < blackValue) {
+                // 更新截取条件
+                bottomRow = row;
+            } else {
+                break;
+            }
+        }
+
+        int x = leftCol;
+        int y = topRow;
+        int width = rightCol - leftCol;
+        int height = bottomRow - topRow;
+
+        if (leftCol == 0 && rightCol == grayMat.width() - 1 && topRow == 0 && bottomRow == grayMat.height() - 1) {
+            return srcMat;
+        }
+        return cut(smallMat, x, y, width, height);
+    }
+
+    /**
+     * 求和
+     *
+     * @param mat mat
+     * @return sum
+     */
+    private static int sum(Mat mat) {
+        int sum = 0;
+        for (int row = 0; row < mat.height(); row++) {
+            for (int col = 0; col < mat.width(); col++) {
+                sum += mat.get(row, col)[0];
+            }
+        }
+        return sum;
     }
 
     /**
