@@ -20,6 +20,9 @@
 
         <javacpp.platform.dependencies>windows-x86_64</javacpp.platform.dependencies>
 
+        <!--util-->
+        <util.mytool-core>1.0</util.mytool-core>
+
         <!--下面的平台只是用来参考配置 javacpp.platform.dependencies-->
         <javacpp.platform.android-arm>android-arm</javacpp.platform.android-arm>
         <javacpp.platform.android-arm64>android-arm64</javacpp.platform.android-arm64>
@@ -41,6 +44,12 @@
 
     <dependencies>
         <dependency>
+            <groupId>cn.edu.zua.mytool</groupId>
+            <artifactId>mytool-core</artifactId>
+            <version>${util.mytool-core}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacv-platform</artifactId>
             <version>1.4.3</version>
@@ -56,6 +65,21 @@
     </dependencies>
 
     <build>
+        <sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
+        <testSourceDirectory>${project.basedir}/src/test/java</testSourceDirectory>
+        <resources>
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>${basedir}/src/main/java</directory>
+                <includes>
+                    <include>**/*.xml</include>
+                    <include>**/*.jpg</include>
+                </includes>
+            </resource>
+        </resources>
+
         <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
             <plugins>
                 <plugin>

@@ -252,6 +252,23 @@ public class ImageUtils {
     }
 
     /**
+     * 直方图均衡化，入参必须为灰度图
+     *
+     * @param grayMat 灰度图
+     * @return 均衡化后的Mat
+     * @throws IllegalArgumentException 如果入参不是灰度图
+     */
+    public static Mat equalizeHist(Mat grayMat) {
+        if (grayMat.channels() != 1) {
+            throw new IllegalArgumentException("入参必须为灰度图");
+        }
+        Mat retMat = new Mat();
+        Imgproc.equalizeHist(grayMat, retMat);
+        return retMat;
+    }
+
+
+    /**
      * 未处理
      * 反色处理
      *
