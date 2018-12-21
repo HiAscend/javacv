@@ -8,9 +8,12 @@ import org.opencv.core.Size;
 import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.xfeatures2d.SURF;
+import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.testng.log4testng.Logger;
+
+import java.math.BigDecimal;
 
 /**
  * @author ascend
@@ -109,6 +112,68 @@ public class ImageUtilsTest {
         showImg(result);
     }
 
+    @Test
+    public void testIsSimilar() {
+        Mat horse1 = Imgcodecs.imread("/tmp/horse3.jpg");
+        Mat srcMat = ImageUtils.removeBlackEdge(horse1);
+
+        Mat horse2 = Imgcodecs.imread("/tmp/horse2.jpg");
+        Mat destMat = ImageUtils.removeBlackEdge(horse2);
+
+        boolean result1 = ImageUtils.isSimilar(srcMat, destMat);
+        Assert.assertFalse(result1);
+
+        boolean result2 = ImageUtils.isSimilar(srcMat, destMat, 512);
+        Assert.assertFalse(result2);
+
+        boolean result3 = ImageUtils.isSimilar(srcMat, destMat, 512, 512, 60.0);
+        Assert.assertFalse(result3);
+    }
+
+    @Test
+    public void testIsSimilar2() {
+        Mat horse1 = Imgcodecs.imread("/tmp/horse3.jpg");
+        Mat srcMat = ImageUtils.removeBlackEdge(horse1);
+
+        Mat horse2 = Imgcodecs.imread("/tmp/horse2.jpg");
+        Mat destMat = ImageUtils.removeBlackEdge(horse2);
+        double width = 512;
+        System.out.println("//\t\t\t\t\t\t\t width\t\theight\t\tsimilar\t\tperiod");
+        for (int i = 0; i < 100; i++) {
+            if (width > 100) {
+                try {
+//                    execute(srcMat, destMat, width);
+                } catch (Exception e) {
+                    // ignore
+                }
+            }
+            width -= 8;
+        }
+//        execute(srcMat, destMat, 168);
+
+    }
+
+  /*  private void execute(Mat src, Mat dest, double width) {
+        long start = System.currentTimeMillis();
+        double height = width * 3 / 4;
+//        double height = width;
+        double similarity = ImageUtils.isSimilar(src, dest, width, height);
+//        BigDecimal bd = new BigDecimal(similarity);
+//        bd.setScale(2, BigDecimal.ROUND_FLOOR);
+        long period = (System.currentTimeMillis() - start);
+        if (!Double.isNaN(similarity)) {
+            System.out.println("// " + width + "\t\t" + height + "\t\t" + String.format("%.2f", similarity) + "%\t\t" + period);
+            System.out.println();
+        }
+    }*/
+
+    @Test
+    public void testDrawKeyPoints() {
+        Mat dog = Imgcodecs.imread("/tmp/ship.jpg");
+        Mat result = ImageUtils.drawKeyPoints(dog);
+
+        showImg(result);
+    }
 
 
     // ----------------显示图片
@@ -121,20 +186,8 @@ public class ImageUtilsTest {
 
     @Test
     public void test() {
-        System.out.println();
+        System.out.println(780 / 512.0);
 
-        Mat horse = Imgcodecs.imread("/tmp/dog.jpg");
-        Mat tmp = new Mat();
-        // 此函数是转置、（即将图像逆时针旋转90度，然后再关于x轴对称）
-        Core.transpose(horse, tmp);
-        Mat result = new Mat();
-        // flipCode = 0 绕x轴旋转180， 也就是关于x轴对称
-        // flipCode = 1 绕y轴旋转180， 也就是关于y轴对称
-        // flipCode = -1 此函数关于原点对称
-//        Core.flip(tmp, result, -1);
-//        HighGui.imshow("result", result);
-//        HighGui.waitKey();
-//        ImageUtils.save("/tmp/dogtranspose.jpg", tmp);
     }
 
 }

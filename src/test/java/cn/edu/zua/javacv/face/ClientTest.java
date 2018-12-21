@@ -30,7 +30,7 @@ public class ClientTest {
      * 各参数含义：
      * const Mat& image: 需要被检测的图像（灰度图）
      * vector<Rect>& objects: 保存被检测出的人脸位置坐标序列
-     * double scaleFactor: 每次图片缩放的比例
+     * double scaleFactor: 表示在前后两次相继的扫描中，搜索窗口的比例系数。默认为1.1即每次搜索窗口依次扩大10%;
      * int minNeighbors: 每一个人脸至少要检测到多少次才算是真的人脸
      * int flags： 决定是缩放分类器来检测，还是缩放图像
      * Size(): 表示人脸的最大最小尺寸
@@ -46,7 +46,7 @@ public class ClientTest {
         String faceXml = Client.class.getClassLoader().getResource("data/lbpcascades/lbpcascade_frontalface_improved.xml").getPath().substring(1);
 
         CascadeClassifier faceDetector = new CascadeClassifier(faceXml);
-        Mat image = Imgcodecs.imread("/tmp/face/face6.jpg");
+        Mat image = Imgcodecs.imread("/tmp/face/face8.jpg");
         Mat grayMat = ImageUtils.gray(image);
 
         MatOfRect faceDetections = new MatOfRect();
@@ -67,10 +67,49 @@ public class ClientTest {
     }
 
     /**
+     * 1
+     * image	Matrix of the type CV_8U containing an image where objects are detected.
+     * objects	Vector of rectangles where each rectangle contains the detected object, the rectangles may be partially outside the original image.
+     * scaleFactor	Parameter specifying how much the image size is reduced at each image scale.
+     * minNeighbors	Parameter specifying how many neighbors each candidate rectangle should have to retain it.
+     * flags	Parameter with the same meaning for an old cascade as in the function cvHaarDetectObjects. It is not used for a new cascade.
+     * minSize	Minimum possible object size. Objects smaller than that are ignored.
+     * maxSize	Maximum possible object size. Objects larger than that are ignored. If maxSize == minSize model is evaluated on single scale.
+     *
+     *
+     */
+    @Test
+    @SuppressWarnings("Duplicates")
+    public void testFace2() {
+        String faceXml = Client.class.getClassLoader().getResource("data/lbpcascades/lbpcascade_frontalface_improved.xml").getPath().substring(1);
+
+        CascadeClassifier faceDetector = new CascadeClassifier(faceXml);
+        Mat image = Imgcodecs.imread("/tmp/face/face8.jpg");
+        Mat grayMat = ImageUtils.gray(image);
+
+        MatOfRect faceDetections = new MatOfRect();
+        faceDetector.detectMultiScale(grayMat, faceDetections,1.1, 5, 0, new Size(40, 40));
+        MatOfInt numDetections = new MatOfInt();
+        faceDetector.detectMultiScale2(grayMat, faceDetections, numDetections);
+//        faceDetector.detectMultiScale3(grayMat, faceDetections, numDetections);
+
+        System.out.println(String.format("Detected %s faces", faceDetections.toArray().length));
+
+        for (int i = 0; i < numDetections.toArray().length; i++) {
+            int numDetection = numDetections.toArray()[i];
+            Rect rect = faceDetections.toArray()[i];
+            // 22 4 9
+//            System.out.println(numDetection);
+            if (numDetection >0) {
+                Imgproc.rectangle(image, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 255, 0), 2);
+            }
+        }
+
+        showImg(image);
+    }
+
+    /**
      * CV_HAAR_DO_CANNY_PRUNING =    1
-     * CV_HAAR_SCALE_IMAGE =         2
-     * CV_HAAR_FIND_BIGGEST_OBJECT = 4
-     * CV_HAAR_DO_ROUGH_SEARCH =     8
      */
     @Test
     @SuppressWarnings("Duplicates")
@@ -82,7 +121,7 @@ public class ClientTest {
 
         MatOfRect detections = new MatOfRect();
         Mat detectorMat = ImageUtils.equalizeHist(ImageUtils.gray(image));
-        detector.detectMultiScale(detectorMat, detections, 1.5, 5, 0, new Size(40, 40));
+        detector.detectMultiScale(detectorMat, detections, 1.5, 5, CV_HAAR_DO_CANNY_PRUNING, new Size(40, 40));
 
         System.out.println(String.format("Detected %s eye", detections.toArray().length));
         for (Rect rect : detections.toArray()) {

@@ -2,6 +2,9 @@ package cn.edu.zua.javacv.util;
 
 import org.opencv.core.*;
 import org.opencv.core.Point;
+import org.opencv.features2d.AKAZE;
+import org.opencv.features2d.BFMatcher;
+import org.opencv.features2d.Features2d;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
@@ -11,6 +14,8 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+
+import static org.opencv.core.Core.NORM_L2;
 
 /**
  * javacv opencv 图片操作工具类
@@ -23,6 +28,10 @@ public class ImageUtils {
      * 去黑边"全黑"阈值
      */
     private static final int BLACK_VALUE = 5;
+    /**
+     * 相似度阈值
+     */
+    private static final double SIMILARITY_VALVE = 60.0;
 
     private ImageUtils() {
     }
@@ -265,6 +274,119 @@ public class ImageUtils {
         Mat retMat = new Mat();
         Imgproc.equalizeHist(grayMat, retMat);
         return retMat;
+    }
+
+    /**
+     * 判断两个mat是否符合系统设定的阈值 SIMILARITY_VALVE
+     * 采用 AKAZE 算法，后续可扩展其他算法
+     * 默认resize尺寸为 src.width -> 512.0 然后按照 4:3 得到src的width，height，然后dest同尺度resize
+     * 若去黑边 {@code ImageUtils#removeBlackEdge}
+     *
+     * @param src  源
+     * @param dest 目标
+     * @return boolean true 实际相似度 >= SIMILARITY_VALVE 返回true
+     */
+    public static boolean isSimilar(Mat src, Mat dest) {
+        return isSimilar(src, dest, 512.0);
+
+    }
+
+    /**
+     * 判断两个mat是否符合系统设定的阈值 SIMILARITY_VALVE
+     * 采用 AKAZE 算法，后续可扩展其他算法
+     * 默认resize尺寸为 src.width -> width 然后按照 4:3 得到src的width，height，然后dest同尺度resize
+     * 若去黑边 {@code ImageUtils#removeBlackEdge}
+     *
+     * @param src   源
+     * @param dest  目标
+     * @param width 宽
+     * @return boolean true 实际相似度 >= SIMILARITY_VALVE 返回true
+     */
+    public static boolean isSimilar(Mat src, Mat dest, double width) {
+        double height = width * 3 / 4;
+        return isSimilar(src, dest, width, height, SIMILARITY_VALVE);
+
+    }
+
+    /**
+     * 判断两个mat是否符合系统设定的阈值 SIMILARITY_VALVE
+     * 采用 AKAZE 算法，后续可扩展其他算法
+     * 给啥就比啥
+     *
+     * @param src             源
+     * @param dest            目标
+     * @param width           图片宽（px）
+     * @param height          图片高（px）
+     * @param similarityValue 相似度阈值
+     * @return boolean true 实际相似度 >= SIMILARITY_VALVE 返回true
+     */
+    public static boolean isSimilar(Mat src, Mat dest, double width, double height, double similarityValue) {
+        boolean isSimilar = false;
+        // 缩放
+        Size size = new Size(width, height);
+        Mat smallSrcMat = resize(src, size);
+        Mat smallDestMat = resize(dest, size);
+
+        Mat srcGrayMat = gray(smallSrcMat);
+        Mat destGrayMat = gray(smallDestMat);
+
+        AKAZE akaze = AKAZE.create();
+
+        MatOfKeyPoint mokp = new MatOfKeyPoint();
+        Mat desc = new Mat();
+        akaze.detect(srcGrayMat, mokp);
+        akaze.compute(srcGrayMat, mokp, desc);
+
+        MatOfKeyPoint mokp2 = new MatOfKeyPoint();
+        Mat desc2 = new Mat();
+        akaze.detect(destGrayMat, mokp2);
+        akaze.compute(destGrayMat, mokp2, desc2);
+
+        BFMatcher matcher = BFMatcher.create(NORM_L2, true);
+        MatOfDMatch matOfDMatch = new MatOfDMatch();
+        matcher.match(desc, desc2, matOfDMatch);
+        double similarity = (double) (2 * matOfDMatch.toArray().length) / (mokp.toArray().length + mokp2.toArray().length) * 100;
+        if (similarity >= similarityValue) {
+            isSimilar = true;
+        }
+        return isSimilar;
+    }
+
+    /**
+     * 画出图片中的特征点，默认采用 AKAZE 算法
+     *
+     * @param imageMat 源图片
+     * @return 画出特征点的 Mat
+     */
+    public static Mat drawKeyPoints(Mat imageMat) {
+        AKAZE akaze = AKAZE.create();
+        MatOfKeyPoint mokp = new MatOfKeyPoint();
+        akaze.detect(imageMat, mokp);
+        return drawKeyPoints(imageMat, mokp);
+    }
+
+    /**
+     * 画出图片中的特征点
+     *
+     * @param imageMat 源图片
+     * @param mokp     特征点
+     * @return 画出特征点的 Mat
+     */
+    public static Mat drawKeyPoints(Mat imageMat, MatOfKeyPoint mokp) {
+        Mat retMat = new Mat();
+        Features2d.drawKeypoints(imageMat, mokp, retMat);
+        return retMat;
+    }
+
+    private static void drawPoint(Mat srcMat, MatOfKeyPoint mokp, double width, double height, boolean src) {
+        Mat outMat = new Mat();
+        Features2d.drawKeypoints(srcMat, mokp, outMat, new Scalar(0, 0, 255));
+        if (src) {
+            save("/tmp/tmp/" + width + " X " + height + "_src.jpg", outMat);
+        } else {
+
+            save("/tmp/tmp/" + width + " X " + height + "_dest.jpg", outMat);
+        }
     }
 
 
