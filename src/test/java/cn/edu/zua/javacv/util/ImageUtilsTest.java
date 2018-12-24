@@ -105,6 +105,18 @@ public class ImageUtilsTest {
     }
 
     @Test
+    public void testRemoveWhiteEdge() {
+//        Mat mat = Imgcodecs.imread("/tmp/logo/pos/images/logo_40.jpg");
+//        Mat result = ImageUtils.removeWhiteEdge(mat);
+//        ImageUtils.save("/tmp/logo/pos/images/logo_40_result.jpg", result);
+        for (int i = 0; i < 13; i++) {
+            Mat mat = Imgcodecs.imread("/tmp/logo/pos/images/logo_(" + (i + 1) + ").jpg");
+            Mat result = ImageUtils.removeWhiteEdge(mat);
+            ImageUtils.save("/tmp/logo/pos/images/result_" + (i + 1) + ".jpg", result);
+        }
+    }
+
+    @Test
     public void testEqualizeHist() {
         Mat dog = Imgcodecs.imread("/tmp/dog.jpg");
         Mat result = ImageUtils.equalizeHist(ImageUtils.gray(dog));

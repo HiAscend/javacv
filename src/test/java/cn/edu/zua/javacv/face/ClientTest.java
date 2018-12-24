@@ -3,6 +3,9 @@ package cn.edu.zua.javacv.face;
 import cn.edu.zua.javacv.util.ImageUtils;
 import cn.edu.zua.mytool.core.util.PathUtils;
 import org.bytedeco.javacpp.Loader;
+import org.bytedeco.javacv.FFmpegFrameGrabber;
+import org.bytedeco.javacv.Frame;
+import org.bytedeco.javacv.FrameGrabber;
 import org.opencv.core.*;
 import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -11,8 +14,8 @@ import org.opencv.objdetect.CascadeClassifier;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.util.Random;
 
 import static org.bytedeco.javacpp.opencv_objdetect.*;
 
@@ -75,8 +78,6 @@ public class ClientTest {
      * flags	Parameter with the same meaning for an old cascade as in the function cvHaarDetectObjects. It is not used for a new cascade.
      * minSize	Minimum possible object size. Objects smaller than that are ignored.
      * maxSize	Maximum possible object size. Objects larger than that are ignored. If maxSize == minSize model is evaluated on single scale.
-     *
-     *
      */
     @Test
     @SuppressWarnings("Duplicates")
@@ -88,7 +89,7 @@ public class ClientTest {
         Mat grayMat = ImageUtils.gray(image);
 
         MatOfRect faceDetections = new MatOfRect();
-        faceDetector.detectMultiScale(grayMat, faceDetections,1.1, 5, 0, new Size(40, 40));
+        faceDetector.detectMultiScale(grayMat, faceDetections, 1.1, 5, 0, new Size(40, 40));
         MatOfInt numDetections = new MatOfInt();
         faceDetector.detectMultiScale2(grayMat, faceDetections, numDetections);
 //        faceDetector.detectMultiScale3(grayMat, faceDetections, numDetections);
@@ -100,7 +101,7 @@ public class ClientTest {
             Rect rect = faceDetections.toArray()[i];
             // 22 4 9
 //            System.out.println(numDetection);
-            if (numDetection >0) {
+            if (numDetection > 0) {
                 Imgproc.rectangle(image, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 255, 0), 2);
             }
         }
@@ -177,10 +178,124 @@ public class ClientTest {
     }
 
     @Test
+    public void testCutLogo() {
+        Mat logo = Imgcodecs.imread("/tmp/logo/pos/images/logo_40_result.jpg");
+        Mat grayMat = ImageUtils.gray(logo);
+        int topRow = 0;
+        int leftCol = 0;
+        // 开始
+        for (int row = 0; row < 40; row++) {
+            for (int col = 0; col < grayMat.width(); col++) {
+                System.out.print(grayMat.get(row, col)[0]);
+                System.out.print("\t");
+            }
+            System.out.println();
+        }
+//        showImg(logo);
+    }
+
+    @Test
+    public void testCutLogoNeg() {
+//        Frame frame = findFrame(30);
+//        Mat result = ImageUtils.convertToOrgOpenCvCoreMat(frame);
+//        showImg(result);
+//        System.out.println("result = " + result.width());
+//        System.out.println("result.height() = " + result.height());
+
+        Random random = new Random();
+        int index = 1;
+
+        for (int i = 0; i < 100; i++) {
+            Frame frame = findFrame(random.nextInt(4800));
+            Mat result = ImageUtils.convertToOrgOpenCvCoreMat(frame);
+            for (int j = 0; j < 20; j++) {
+                int x = random.nextInt(result.width()-754) + 1;
+                int y = random.nextInt(result.height()-100) + 1;
+                int width = random.nextInt(500) + 1;
+                int height = random.nextInt(480) + 1;
+                while (result.width()-x < width) {
+                    width = random.nextInt(500) + 1;
+                }
+                while (result.height()-y < height) {
+                    height = random.nextInt(480) + 1;
+                }
+
+                System.out.println("x = " + x);
+                System.out.println("y = " + y);
+                System.out.println("width = " + width);
+                System.out.println("height = " + height);
+                Mat small = ImageUtils.cut(result, x, y, width, height);
+                ImageUtils.save("/tmp/logo/neg/" + index++ + ".jpg", ImageUtils.gray(small));
+            }
+        }
+
+    }
+
+    /**
+     * 从视频中找出指定帧
+     *
+     * @return 指定帧
+     */
+    private Frame findFrame(int frameIndex) {
+        Frame frame = null;
+        String fileName = "Z:/tmp/logo/test.mp4";
+        try (FFmpegFrameGrabber fFmpegFrameGrabber = new FFmpegFrameGrabber(fileName)) {
+            fFmpegFrameGrabber.start();
+            fFmpegFrameGrabber.setFrameNumber(frameIndex);
+            Frame srcFrame = fFmpegFrameGrabber.grabImage();
+            if (srcFrame != null) {
+                frame = srcFrame.clone();
+            }
+        } catch (FrameGrabber.Exception e) {
+            e.printStackTrace();
+        }
+        return frame;
+    }
+
+
+    @Test
+    public void createNetTxt() {
+        String path = "Z:\\tmp\\logo\\neg\\";
+        File txtFile = new File("Z:\\tmp\\logo\\neg.txt");
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(txtFile);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        PrintWriter pw = new PrintWriter(fos,true);
+        File[] files = new File(path).listFiles();
+        for (File file : files) {
+            pw.println("neg/"+file.getName());
+        }
+
+    }
+
+    @Test
+    public void createPosTxt() {
+        String path = "Z:\\tmp\\logo\\pos\\";
+        File txtFile = new File("Z:\\tmp\\logo\\pos.txt");
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(txtFile);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        PrintWriter pw = new PrintWriter(fos,true);
+        File[] files = new File(path).listFiles();
+        for (File file : files) {
+            Mat mat = Imgcodecs.imread(file.getAbsolutePath());
+            pw.println("pos/" + file.getName() + " 1 0 0 " + mat.width() + " " + mat.height());
+        }
+
+    }
+
+    @Test
     public void test() throws IOException {
-        Mat dog = Imgcodecs.imread("/tmp/dog.jpg");
-        Mat result = new Mat();
-        Imgproc.equalizeHist(ImageUtils.gray(dog), result);
-        showImg(result);
+        for (int i = 0; i < 13; i++) {
+            Mat mat = Imgcodecs.imread("Z:\\tmp\\logo\\tmp\\images\\result_" + (i+1) +".jpg");
+            Mat grayMat = ImageUtils.gray(mat);
+            ImageUtils.save("/tmp/logo/pos/result_" + (i+1) +".jpg", grayMat);
+        }
     }
 }

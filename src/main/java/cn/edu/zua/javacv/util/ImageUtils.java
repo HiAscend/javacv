@@ -1,5 +1,7 @@
 package cn.edu.zua.javacv.util;
 
+import org.bytedeco.javacv.Frame;
+import org.bytedeco.javacv.OpenCVFrameConverter;
 import org.opencv.core.*;
 import org.opencv.core.Point;
 import org.opencv.features2d.AKAZE;
@@ -27,7 +29,11 @@ public class ImageUtils {
     /**
      * 去黑边"全黑"阈值
      */
-    private static final int BLACK_VALUE = 5;
+    private static final double BLACK_VALUE = 5;
+    /**
+     * 去白边“全白”阈值
+     */
+    private static final double WHITE_VALUE = 254.0;
     /**
      * 相似度阈值
      */
@@ -44,6 +50,16 @@ public class ImageUtils {
      */
     public static void save(String fileName, Mat mat) {
         Imgcodecs.imwrite(fileName, mat);
+    }
+
+    /**
+     * 帧转换为Mat
+     *
+     * @param frame 帧
+     * @return Mat数据
+     */
+    public static Mat convertToOrgOpenCvCoreMat(Frame frame) {
+        return new OpenCVFrameConverter.ToIplImage().convertToOrgOpenCvCoreMat(frame);
     }
 
     /**
@@ -166,7 +182,7 @@ public class ImageUtils {
     }
 
     /**
-     * 去除图片黑边，若无黑边，则原图返回。默认“全黑”阈值为 {@code BLACK_VALUE}
+     * 去除图片黑边，若无黑边，则原图副本返回。默认“全黑”阈值为 {@code BLACK_VALUE}
      *
      * @param srcMat 预去除黑边的Mat
      * @return 去除黑边之后的Mat
@@ -176,13 +192,13 @@ public class ImageUtils {
     }
 
     /**
-     * 去除图片黑边，若无黑边，则原图返回。
+     * 去除图片黑边，若无黑边，则原图副本返回。
      *
      * @param blackValue 一般低于5的已经是很黑的颜色了
      * @param srcMat     源Mat对象
      * @return Mat对象
      */
-    public static Mat removeBlackEdge(Mat srcMat, int blackValue) {
+    public static Mat removeBlackEdge(Mat srcMat, double blackValue) {
         // 预截取，默认播放条等情况的处理
         Mat smallMat = cut(srcMat, (int) (srcMat.width() * 0.02), (int) (srcMat.height() * 0.02));
         // 灰度
@@ -250,14 +266,91 @@ public class ImageUtils {
      * @param mat mat
      * @return sum
      */
-    private static int sum(Mat mat) {
-        int sum = 0;
+    private static double sum(Mat mat) {
+        double sum = 0;
         for (int row = 0; row < mat.height(); row++) {
             for (int col = 0; col < mat.width(); col++) {
                 sum += mat.get(row, col)[0];
             }
         }
         return sum;
+    }
+
+    /**
+     * 去除图片白边（纯色，灰度值为255.0），若无白边，则原图副本返回。
+     *
+     * @param srcMat 源Mat对象
+     * @return Mat对象
+     */
+    public static Mat removeWhiteEdge(Mat srcMat) {
+        return removeWhiteEdge(srcMat, WHITE_VALUE);
+    }
+
+    /**
+     * 去除图片白边（纯色，灰度值为255.0），若无白边，则原图副本返回。
+     *
+     * @param srcMat     源Mat对象
+     * @param whiteValue 一般高于254.0的已经是很白的颜色了
+     * @return Mat对象
+     */
+    public static Mat removeWhiteEdge(Mat srcMat, double whiteValue) {
+        // 灰度
+        Mat grayMat = gray(srcMat);
+        int topRow = 0;
+        int leftCol = 0;
+        int rightCol = grayMat.width() - 1;
+        int bottomRow = grayMat.height() - 1;
+
+        // 上方白边判断
+        for (int row = 0; row < grayMat.height(); row++) {
+            // 判断当前行是否全白
+            if (sum(grayMat.row(row)) / grayMat.width() > whiteValue) {
+                // 更新截取条件
+                topRow = row;
+            } else {
+                break;
+            }
+        }
+        // 左边白边判断
+        for (int col = 0; col < grayMat.width(); col++) {
+            // 判断当前列是否全白
+            if (sum(grayMat.col(col)) / grayMat.height() > whiteValue) {
+                // 更新截取条件
+                leftCol = col;
+            } else {
+                break;
+            }
+        }
+        // 右边白边判断
+        for (int col = grayMat.width() - 1; col > 0; col--) {
+            // 判断当前列是否基本全白
+            if (sum(grayMat.col(col)) / grayMat.height() > whiteValue) {
+                // 更新截取条件
+                rightCol = col;
+            } else {
+                break;
+            }
+        }
+        // 下方白边判断
+        for (int row = grayMat.height() - 1; row > 0; row--) {
+            // 判断当前行是否基本全白
+            if (sum(grayMat.row(row)) / grayMat.width() > whiteValue) {
+                // 更新截取条件
+                bottomRow = row;
+            } else {
+                break;
+            }
+        }
+
+        int x = leftCol;
+        int y = topRow;
+        int width = rightCol - leftCol;
+        int height = bottomRow - topRow;
+
+        if (leftCol == 0 && rightCol == grayMat.width() - 1 && topRow == 0 && bottomRow == grayMat.height() - 1) {
+            return srcMat.clone();
+        }
+        return cut(srcMat, x, y, width, height);
     }
 
     /**
