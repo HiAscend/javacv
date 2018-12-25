@@ -1,8 +1,6 @@
 package cn.edu.zua.javacv.face;
 
 import cn.edu.zua.javacv.util.ImageUtils;
-import cn.edu.zua.mytool.core.util.PathUtils;
-import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.FrameGrabber;
@@ -15,15 +13,14 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.io.*;
-import java.util.Random;
 
-import static org.bytedeco.javacpp.opencv_objdetect.*;
+import static org.bytedeco.javacpp.opencv_objdetect.CV_HAAR_DO_CANNY_PRUNING;
 
 /**
  * @author ascend
  * @date 2018/12/20
  */
-public class ClientTest {
+public class ClientTest3 {
     @BeforeClass
     public void beforeClass() {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
@@ -112,15 +109,15 @@ public class ClientTest {
     @Test
     @SuppressWarnings("Duplicates")
     public void testFace3() {
-        String faceXml = Client.class.getClassLoader().getResource("data/logo/logo/cascade.xml").getPath().substring(1);
+        String faceXml = Client.class.getClassLoader().getResource("data/logo/cascade.xml").getPath().substring(1);
 
         CascadeClassifier faceDetector = new CascadeClassifier(faceXml);
-        Mat image = Imgcodecs.imread("/tmp/logo/tmp/logo3.jpg");
+        Mat image = Imgcodecs.imread("/tmp/logo/tmp/hunan.jpg");
         Mat grayMat = ImageUtils.gray(image);
 
         MatOfRect faceDetections = new MatOfRect();
 //        faceDetector.detectMultiScale(grayMat, faceDetections,1.1, 3, 0);
-        faceDetector.detectMultiScale(grayMat, faceDetections, 1.1, 9, 0);
+        faceDetector.detectMultiScale(grayMat, faceDetections);
 
         System.out.println(String.format("Detected %s faces", faceDetections.toArray().length));
         for (Rect rect : faceDetections.toArray()) {
@@ -225,14 +222,15 @@ public class ClientTest {
 //        showImg(small);
 
         int index = 1;
-        int frame = 1000;
+        int frame = 5500;
 
-        for (int i = 0; i < 500; i++) {
+        for (int i = 0; i < 60; i++) {
             Mat mat = ImageUtils.convertToOrgOpenCvCoreMat(findFrame(frame));
-            Mat small = ImageUtils.cut(mat, 28, 30, 51, 51);
-            ImageUtils.save("/tmp/logo/pos/" + (index++) + ".jpg", small);
-            ImageUtils.save("/tmp/logo/pos/" + (index++) + ".jpg", ImageUtils.gray(small));
-            frame += 25;
+            Mat small = ImageUtils.removeBlackEdge(mat);
+            Mat logo = ImageUtils.cut(small, 140, 70, 110, 110);
+            ImageUtils.save("/tmp/logo3/pos/" + (index++) + ".jpg", logo);
+            ImageUtils.save("/tmp/logo3/pos/" + (index++) + ".jpg", ImageUtils.gray(logo));
+            frame += 100;
         }
 
     }
@@ -240,33 +238,27 @@ public class ClientTest {
     @Test
     @SuppressWarnings("Duplicates")
     public void testCutLogoNeg() {
-//        Frame frame = findFrame(30);
-//        Mat result = ImageUtils.convertToOrgOpenCvCoreMat(frame);
-//        showImg(result);
-//        System.out.println("result = " + result.width());
-//        System.out.println("result.height() = " + result.height());
-
-
-//        Mat mat = ImageUtils.convertToOrgOpenCvCoreMat(findFrame(500));
-//        showImg(mat);
-//        Mat small = ImageUtils.cut(mat, 28, 30, 51, 51);
-//        showImg(small);
+//        Mat mat = ImageUtils.convertToOrgOpenCvCoreMat(findFrame(2400));
+//        Mat smallMat = ImageUtils.removeBlackEdge(mat);
+//        Mat neg1 = ImageUtils.cut(smallMat, 600, 260, 200, 100);
+//        showImg(ImageUtils.gray(neg1));
 
         int index = 1;
-        int frame = 1000;
+        int frame = 2200;
 
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 100; i++) {
             Mat mat = ImageUtils.convertToOrgOpenCvCoreMat(findFrame(frame));
+            Mat smallMat = ImageUtils.removeBlackEdge(mat);
 
-            Mat neg1 = ImageUtils.cut(mat, 320, 120, 60, 60);
-            Mat neg2 = ImageUtils.cut(mat, 320, 180, 60, 60);
-            Mat neg3 = ImageUtils.cut(mat, 320, 240, 60, 60);
+            Mat neg1 = ImageUtils.cut(smallMat, 600, 160, 220, 220);
+            Mat neg2 = ImageUtils.cut(smallMat, 800, 360, 220, 220);
+            Mat neg3 = ImageUtils.cut(smallMat, 1000, 560, 220, 220);
 
 
-            ImageUtils.save("/tmp/logo/neg/" + (index++) + ".jpg", ImageUtils.gray(neg1));
-            ImageUtils.save("/tmp/logo/neg/" + (index++) + ".jpg", ImageUtils.gray(neg2));
-            ImageUtils.save("/tmp/logo/neg/" + (index++) + ".jpg", ImageUtils.gray(neg3));
-            frame += 25;
+            ImageUtils.save("/tmp/logo3/neg/" + (index++) + ".jpg", ImageUtils.gray(neg1));
+            ImageUtils.save("/tmp/logo3/neg/" + (index++) + ".jpg", ImageUtils.gray(neg2));
+            ImageUtils.save("/tmp/logo3/neg/" + (index++) + ".jpg", ImageUtils.gray(neg3));
+            frame += 100;
         }
 
     }
@@ -279,7 +271,7 @@ public class ClientTest {
     @SuppressWarnings("Duplicates")
     private Frame findFrame(int frameIndex) {
         Frame frame = null;
-        String fileName = "Z:/tmp/logo/test.mp4";
+        String fileName = "Z:/tmp/logo3/test.mp4";
         try (FFmpegFrameGrabber fFmpegFrameGrabber = new FFmpegFrameGrabber(fileName)) {
             fFmpegFrameGrabber.start();
             fFmpegFrameGrabber.setFrameNumber(frameIndex);
@@ -297,8 +289,8 @@ public class ClientTest {
     @Test
     @SuppressWarnings("Duplicates")
     public void createNegTxt() {
-        String path = "Z:\\tmp\\logo\\neg\\";
-        File txtFile = new File("Z:\\tmp\\logo\\neg.txt");
+        String path = "Z:\\tmp\\logo3\\neg\\";
+        File txtFile = new File("Z:\\tmp\\logo3\\neg.txt");
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(txtFile);
@@ -316,8 +308,8 @@ public class ClientTest {
     @Test
     @SuppressWarnings("Duplicates")
     public void createPosTxt() {
-        String path = "Z:\\tmp\\logo\\pos\\";
-        File txtFile = new File("Z:\\tmp\\logo\\pos.txt");
+        String path = "Z:\\tmp\\logo3\\pos\\";
+        File txtFile = new File("Z:\\tmp\\logo3\\pos.txt");
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(txtFile);

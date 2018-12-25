@@ -165,19 +165,7 @@ public class ImageUtilsTest {
 
     }
 
-  /*  private void execute(Mat src, Mat dest, double width) {
-        long start = System.currentTimeMillis();
-        double height = width * 3 / 4;
-//        double height = width;
-        double similarity = ImageUtils.isSimilar(src, dest, width, height);
-//        BigDecimal bd = new BigDecimal(similarity);
-//        bd.setScale(2, BigDecimal.ROUND_FLOOR);
-        long period = (System.currentTimeMillis() - start);
-        if (!Double.isNaN(similarity)) {
-            System.out.println("// " + width + "\t\t" + height + "\t\t" + String.format("%.2f", similarity) + "%\t\t" + period);
-            System.out.println();
-        }
-    }*/
+
 
     @Test
     public void testDrawKeyPoints() {

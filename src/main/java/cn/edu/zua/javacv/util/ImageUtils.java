@@ -255,7 +255,7 @@ public class ImageUtils {
         int height = bottomRow - topRow;
 
         if (leftCol == 0 && rightCol == grayMat.width() - 1 && topRow == 0 && bottomRow == grayMat.height() - 1) {
-            return srcMat;
+            return srcMat.clone();
         }
         return cut(smallMat, x, y, width, height);
     }
