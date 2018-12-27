@@ -1,8 +1,6 @@
 package cn.edu.zua.javacv.face;
 
 import cn.edu.zua.javacv.util.ImageUtils;
-import cn.edu.zua.mytool.core.util.PathUtils;
-import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.FrameGrabber;
@@ -17,13 +15,14 @@ import org.testng.annotations.Test;
 import java.io.*;
 import java.util.Random;
 
-import static org.bytedeco.javacpp.opencv_objdetect.*;
+import static cn.edu.zua.javacv.util.ImageUtils.*;
+import static org.bytedeco.javacpp.opencv_objdetect.CV_HAAR_DO_CANNY_PRUNING;
 
 /**
  * @author ascend
  * @date 2018/12/20
  */
-public class ClientTest {
+public class ClientTest4 {
     @BeforeClass
     public void beforeClass() {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
@@ -112,15 +111,16 @@ public class ClientTest {
     @Test
     @SuppressWarnings("Duplicates")
     public void testFace3() {
-        String faceXml = Client.class.getClassLoader().getResource("data/logo/logo/cascade.xml").getPath().substring(1);
+        String faceXml = Client.class.getClassLoader().getResource("data/logo/logo4/cascade.xml").getPath().substring(1);
 
         CascadeClassifier faceDetector = new CascadeClassifier(faceXml);
-        Mat image = Imgcodecs.imread("/tmp/logo/tmp/logo3.jpg");
+        Mat image = Imgcodecs.imread("/tmp/logo4/tmp/logo3.jpg");
         Mat grayMat = ImageUtils.gray(image);
 
         MatOfRect faceDetections = new MatOfRect();
 //        faceDetector.detectMultiScale(grayMat, faceDetections,1.1, 3, 0);
-        faceDetector.detectMultiScale(grayMat, faceDetections, 1.1, 3, 0);
+//        faceDetector.detectMultiScale(grayMat, faceDetections, 1.1, 3, 0, new Size(50, 50), new Size(130, 130));
+        faceDetector.detectMultiScale(grayMat, faceDetections);
 
         System.out.println(String.format("Detected %s faces", faceDetections.toArray().length));
         for (Rect rect : faceDetections.toArray()) {
@@ -225,14 +225,19 @@ public class ClientTest {
 //        showImg(small);
 
         int index = 1;
-        int frame = 1000;
+        int frame = 2;
 
         for (int i = 0; i < 500; i++) {
-            Mat mat = ImageUtils.convertToOrgOpenCvCoreMat(findFrame(frame));
-            Mat small = ImageUtils.cut(mat, 28, 30, 51, 51);
-            ImageUtils.save("/tmp/logo/pos/" + (index++) + ".jpg", small);
-            ImageUtils.save("/tmp/logo/pos/" + (index++) + ".jpg", ImageUtils.gray(small));
-            frame += 25;
+            try {
+                Mat mat = ImageUtils.convertToOrgOpenCvCoreMat(findFrame(frame));
+                Mat small = ImageUtils.removeBlackEdge(mat);
+                Mat logo = ImageUtils.cut(small, 140, 70, 110, 110);
+                Mat grayMat = ImageUtils.gray(logo);
+                ImageUtils.save("/tmp/logo4/pos/" + (index++) + ".jpg", resize(grayMat, new Size(33, 33)));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            frame += 50;
         }
 
     }
@@ -240,36 +245,113 @@ public class ClientTest {
     @Test
     @SuppressWarnings("Duplicates")
     public void testCutLogoNeg() {
-//        Frame frame = findFrame(30);
-//        Mat result = ImageUtils.convertToOrgOpenCvCoreMat(frame);
-//        showImg(result);
-//        System.out.println("result = " + result.width());
-//        System.out.println("result.height() = " + result.height());
+//        Mat mat = ImageUtils.convertToOrgOpenCvCoreMat(findFrame(2400));
+//        Mat smallMat = ImageUtils.removeBlackEdge(mat);
+//        Mat neg1 = ImageUtils.cut(smallMat, 600, 260, 200, 100);
+//        showImg(ImageUtils.gray(neg1));
 
-
-//        Mat mat = ImageUtils.convertToOrgOpenCvCoreMat(findFrame(500));
-//        showImg(mat);
-//        Mat small = ImageUtils.cut(mat, 28, 30, 51, 51);
-//        showImg(small);
-
+        Random random = new Random();
         int index = 1;
-        int frame = 1000;
+        int frame = 500;
+        int baseWidth = 33;
+        int baseHeight = 33;
+        int inc = 25;
 
-        for (int i = 0; i < 1000; i++) {
-            Mat mat = ImageUtils.convertToOrgOpenCvCoreMat(findFrame(frame));
+        for (int i = 0; i < 200; i++) {
+            try {
+                Mat mat = ImageUtils.convertToOrgOpenCvCoreMat(findFrame(frame));
+                Mat smallMat = ImageUtils.removeBlackEdge(mat);
+                Mat grayMat = gray(smallMat);
 
-            Mat neg1 = ImageUtils.cut(mat, 320, 120, 60, 60);
-            Mat neg2 = ImageUtils.cut(mat, 320, 180, 60, 60);
-            Mat neg3 = ImageUtils.cut(mat, 320, 240, 60, 60);
+                Mat sunMat1 = cut(grayMat,300 + random.nextInt(200), 160 + random.nextInt(200), 120, 130);
+                Mat sunMat2 = cut(grayMat,400 + random.nextInt(200), 200 + random.nextInt(200), 110, 120);
+                Mat sunMat3 = cut(grayMat,500 + random.nextInt(200), 250 + random.nextInt(200), 100, 100);
+                Mat sunMat4 = cut(grayMat,600 + random.nextInt(200), 300 + random.nextInt(200), 130, 190);
+                Mat sunMat5 = cut(grayMat,700 + random.nextInt(200), 350 + random.nextInt(200), 140, 180);
+                Mat sunMat6 = cut(grayMat,800 + random.nextInt(200), 400 + random.nextInt(200), 150, 170);
+                Mat sunMat7 = cut(grayMat,850 + random.nextInt(200), 380 + random.nextInt(200), 160, 160);
+                Mat sunMat8 = cut(grayMat,300 + random.nextInt(200), 300 + random.nextInt(200), 170, 150);
+                Mat sunMat9 = cut(grayMat,200 + random.nextInt(200), 200 + random.nextInt(200), 180, 140);
+                Mat sunMat10= cut(grayMat,150 + random.nextInt(200), 150 + random.nextInt(200), 190, 130);
+
+                Mat neg1 = resize(sunMat1, new Size(baseWidth + random.nextInt(inc), baseHeight + random.nextInt(inc)));
+                Mat neg2 = resize(sunMat2, new Size(baseWidth + random.nextInt(inc), baseHeight + random.nextInt(inc)));
+                Mat neg3 = resize(sunMat3, new Size(baseWidth + random.nextInt(inc), baseHeight + random.nextInt(inc)));
+                Mat neg4 = resize(sunMat4, new Size(baseWidth + random.nextInt(inc), baseHeight + random.nextInt(inc)));
+                Mat neg5 = resize(sunMat5, new Size(baseWidth + random.nextInt(inc), baseHeight + random.nextInt(inc)));
+                Mat neg6 = resize(sunMat6, new Size(baseWidth + random.nextInt(inc), baseHeight + random.nextInt(inc)));
+                Mat neg7 = resize(sunMat7, new Size(baseWidth + random.nextInt(inc), baseHeight + random.nextInt(inc)));
+                Mat neg8 = resize(sunMat8, new Size(baseWidth + random.nextInt(inc), baseHeight + random.nextInt(inc)));
+                Mat neg9 = resize(sunMat9, new Size(baseWidth + random.nextInt(inc), baseHeight + random.nextInt(inc)));
+                Mat neg10 = resize(sunMat10, new Size(baseWidth + random.nextInt(inc), baseHeight + random.nextInt(inc)));
 
 
-            ImageUtils.save("/tmp/logo/neg/" + (index++) + ".jpg", ImageUtils.gray(neg1));
-            ImageUtils.save("/tmp/logo/neg/" + (index++) + ".jpg", ImageUtils.gray(neg2));
-            ImageUtils.save("/tmp/logo/neg/" + (index++) + ".jpg", ImageUtils.gray(neg3));
-            frame += 25;
+                ImageUtils.save("/tmp/logo4/neg/" + (index++) + ".jpg", neg1);
+                ImageUtils.save("/tmp/logo4/neg/" + (index++) + ".jpg", neg2);
+                ImageUtils.save("/tmp/logo4/neg/" + (index++) + ".jpg", neg3);
+                ImageUtils.save("/tmp/logo4/neg/" + (index++) + ".jpg", neg4);
+                ImageUtils.save("/tmp/logo4/neg/" + (index++) + ".jpg", neg5);
+                ImageUtils.save("/tmp/logo4/neg/" + (index++) + ".jpg", neg6);
+                ImageUtils.save("/tmp/logo4/neg/" + (index++) + ".jpg", neg7);
+                ImageUtils.save("/tmp/logo4/neg/" + (index++) + ".jpg", neg8);
+                ImageUtils.save("/tmp/logo4/neg/" + (index++) + ".jpg", neg9);
+                ImageUtils.save("/tmp/logo4/neg/" + (index++) + ".jpg", neg10);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            frame += 50;
         }
 
     }
+
+    @Test
+    @SuppressWarnings("Duplicates")
+    public void testCutLogoNeg2() {
+//        Mat mat = ImageUtils.convertToOrgOpenCvCoreMat(findFrame(2400));
+//        Mat smallMat = ImageUtils.removeBlackEdge(mat);
+//        Mat neg1 = ImageUtils.cut(smallMat, 600, 260, 200, 100);
+//        showImg(ImageUtils.gray(neg1));
+
+        Random random = new Random();
+        int index = 605;
+        int frame = 2;
+        int base = 80;
+        int inc = 200;
+        boolean flag = true;
+
+        for (int i = 0; i < 500; i++) {
+            try {
+                Mat mat = ImageUtils.convertToOrgOpenCvCoreMat(findFrame(frame));
+                Mat smallMat = ImageUtils.removeBlackEdge(mat);
+                Mat grayMat = gray(smallMat);
+                flag = !flag;
+                Mat sunMat1;
+                Mat sunMat2;
+                if (flag) {
+                    sunMat1 = cut(grayMat, 200 + random.nextInt(100), 50 + random.nextInt(100), 720, 720);
+                    sunMat2 = cut(grayMat, 800 + random.nextInt(100), 150 + random.nextInt(100), 720, 720);
+                }else {
+                    sunMat1 = cut(grayMat, 200 + random.nextInt(100), 250 + random.nextInt(100), 520, 520);
+                    sunMat2 = cut(grayMat, 800 + random.nextInt(100), 50 + random.nextInt(100), 720, 720);
+                }
+
+
+                int value = base + random.nextInt(inc);
+                int value2 = base + random.nextInt(inc);
+                Mat neg1 = resize(sunMat1, new Size(value, value));
+                Mat neg2 = resize(sunMat2, new Size(value2, value2));
+
+
+                ImageUtils.save("/tmp/logo4/neg/" + (index++) + ".jpg", neg1);
+                ImageUtils.save("/tmp/logo4/neg/" + (index++) + ".jpg", neg2);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            frame += 50;
+        }
+
+    }
+
 
     /**
      * 从视频中找出指定帧
@@ -279,7 +361,7 @@ public class ClientTest {
     @SuppressWarnings("Duplicates")
     private Frame findFrame(int frameIndex) {
         Frame frame = null;
-        String fileName = "Z:/tmp/logo/test.mp4";
+        String fileName = "Z:/tmp/logo4/test2.mp4";
         try (FFmpegFrameGrabber fFmpegFrameGrabber = new FFmpegFrameGrabber(fileName)) {
             fFmpegFrameGrabber.start();
             fFmpegFrameGrabber.setFrameNumber(frameIndex);
@@ -297,8 +379,8 @@ public class ClientTest {
     @Test
     @SuppressWarnings("Duplicates")
     public void createNegTxt() {
-        String path = "Z:\\tmp\\logo\\neg\\";
-        File txtFile = new File("Z:\\tmp\\logo\\neg.txt");
+        String path = "Z:\\tmp\\logo4\\neg\\";
+        File txtFile = new File("Z:\\tmp\\logo4\\neg.txt");
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(txtFile);
@@ -316,8 +398,8 @@ public class ClientTest {
     @Test
     @SuppressWarnings("Duplicates")
     public void createPosTxt() {
-        String path = "Z:\\tmp\\logo\\pos\\";
-        File txtFile = new File("Z:\\tmp\\logo\\pos.txt");
+        String path = "Z:\\tmp\\logo4\\pos\\";
+        File txtFile = new File("Z:\\tmp\\logo4\\pos.txt");
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(txtFile);
@@ -335,16 +417,26 @@ public class ClientTest {
 
     @Test
     public void test() throws IOException {
-        for (int i = 0; i < 11; i++) {
-            Mat mat = Imgcodecs.imread("Z:\\tmp\\logo\\pos\\result_0" + (i + 1) + ".jpg");
-            Mat grayMat = ImageUtils.gray(mat);
-            ImageUtils.save("/tmp/logo/pos/result_" + (i + 1) + ".jpg", grayMat);
+        int index = 1;
+        for (int i = 0; i < 300; i++) {
+            try {
+                Mat mat = Imgcodecs.imread("/tmp/logo4/pos/" + (i + 1) + ".jpg");
+                ImageUtils.save("/tmp/logo4/pos/" + (index++) + ".jpg", resize(mat, new Size(22, 22)));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
     @Test
     public void test2() {
-        Mat mat = ImageUtils.convertToOrgOpenCvCoreMat(findFrame(525));
-        showImg(mat);
+        String fileName = "Z:/tmp/logo4/test.mp4";
+        try (FFmpegFrameGrabber fFmpegFrameGrabber = new FFmpegFrameGrabber(fileName)) {
+            fFmpegFrameGrabber.start();
+            int length = fFmpegFrameGrabber.getLengthInFrames();
+            System.out.println("length = " + length);
+        } catch (FrameGrabber.Exception e) {
+            e.printStackTrace();
+        }
     }
 }
