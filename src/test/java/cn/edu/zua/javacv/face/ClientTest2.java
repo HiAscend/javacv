@@ -114,11 +114,12 @@ public class ClientTest2 {
         String faceXml = Client.class.getClassLoader().getResource("data/logo/logo2/cascade.xml").getPath().substring(1);
 
         CascadeClassifier faceDetector = new CascadeClassifier(faceXml);
-        Mat image = Imgcodecs.imread("/tmp/logo2/tmp/logo4.jpg");
+        Mat image = Imgcodecs.imread("/tmp/logo2/tmp/logo8.jpg");
         Mat grayMat = ImageUtils.gray(image);
 
         MatOfRect faceDetections = new MatOfRect();
 //        faceDetector.detectMultiScale(grayMat, faceDetections,1.1, 3, 0);
+//        faceDetector.detectMultiScale(grayMat, faceDetections, 1.1, 3, CV_HAAR_DO_CANNY_PRUNING);
         faceDetector.detectMultiScale(grayMat, faceDetections, 1.1, 3, 0);
 
         System.out.println(String.format("Detected %s faces", faceDetections.toArray().length));
@@ -218,27 +219,24 @@ public class ClientTest2 {
     @Test
     @SuppressWarnings("Duplicates")
     public void testCutLogoPos() {
-        Mat mat = ImageUtils.convertToOrgOpenCvCoreMat(findFrame(1000));
-        Mat small = ImageUtils.removeBlackEdge(mat);
-
-        showImg(cut(small, 94, 2, 100, 52));
+//        Mat mat = ImageUtils.convertToOrgOpenCvCoreMat(findFrame(3000));
+//        showImg(cut(mat, 107, 73, 386, 80));
 //        Mat small = ImageUtils.cut(mat, 28, 30, 51, 51);
 //        showImg(small);
 
-        /*int index = 1;
-        int frame = 1000;
+        int index = 1;
+        int frame = 100;
 
-        for (int i = 0; i < 40; i++) {
+        for (int i = 0; i < 200; i++) {
             try {
                 Mat mat = ImageUtils.convertToOrgOpenCvCoreMat(findFrame(frame));
-                Mat small = ImageUtils.removeBlackEdge(mat);
-                Mat logo = ImageUtils.cut(small, 94, 2, 100, 52);
-                ImageUtils.save("/tmp/logo2/pos/" + (index++) + ".jpg", gray(resize(logo, new Size(25, 13))));
+                Mat logo = ImageUtils.cut(mat, 107, 73, 386, 80);
+                ImageUtils.save("/tmp/logo2/pos/" + (index++) + ".jpg", gray(resize(logo, new Size(75, 15))));
             } catch (Exception e) {
                 e.printStackTrace();
             }
             frame += 50;
-        }*/
+        }
 
     }
 
@@ -301,19 +299,18 @@ public class ClientTest2 {
                     sunMat2 = cut(grayMat, 800 + random.nextInt(100), 50 + random.nextInt(100), 720, 720);
                 }
 
-
                 int value = base + random.nextInt(inc);
                 int value2 = base + random.nextInt(inc);
                 Mat neg1 = resize(sunMat1, new Size(value, value));
                 Mat neg2 = resize(sunMat2, new Size(value2, value2));
 
-
-                ImageUtils.save("/tmp/logo2/neg/" + (index++) + ".jpg", neg1);
-                ImageUtils.save("/tmp/logo2/neg/" + (index++) + ".jpg", neg2);
+//                ImageUtils.save("/tmp/logo2/neg/" + (index++) + ".jpg", neg1);
+//                ImageUtils.save("/tmp/logo2/neg/" + (index++) + ".jpg", neg2);
+                ImageUtils.save("/tmp/neg/dajiangdahe_" + (index++) + ".jpg", neg2);
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            frame += 50;
+            frame += 100;
         }
 
     }
@@ -386,7 +383,7 @@ public class ClientTest2 {
         for (int i = 0; i < 11; i++) {
             try {
                 Mat mat = Imgcodecs.imread("/tmp/logo2/pos/" + (i + 1) + ".jpg");
-                ImageUtils.save("/tmp/logo2/pos/" + (i + 1) + ".jpg", resize(mat, new Size(25, 13)));
+                ImageUtils.save("/tmp/logo2/pos/" + (i + 1) + ".jpg", resize(mat, new Size(50, 10)));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -395,7 +392,17 @@ public class ClientTest2 {
 
     @Test
     public void test2() {
-        Mat mat = ImageUtils.convertToOrgOpenCvCoreMat(findFrame(525));
-        showImg(mat);
+        File dir = new File("/tmp/neg/car/");
+        int index = 1853;
+        int base = 90;
+        int inc = 150;
+        Random rand = new Random();
+        for (File file : dir.listFiles()) {
+            Mat mat = Imgcodecs.imread(file.getAbsolutePath());
+            int value = base + rand.nextInt(inc);
+//            save("/tmp/neg/tmp/neg_"+(index++)+".jpg", gray(resize(mat, new Size(value, value))));
+            save("/tmp/neg/tmp2/neg_"+(index++)+".jpg", mat);
+        }
+
     }
 }

@@ -114,13 +114,12 @@ public class ClientTest4 {
         String faceXml = Client.class.getClassLoader().getResource("data/logo/logo4/cascade.xml").getPath().substring(1);
 
         CascadeClassifier faceDetector = new CascadeClassifier(faceXml);
-        Mat image = Imgcodecs.imread("/tmp/logo4/tmp/logo3.jpg");
+        Mat image = Imgcodecs.imread("/tmp/logo4/tmp/logo10.jpg");
         Mat grayMat = ImageUtils.gray(image);
 
         MatOfRect faceDetections = new MatOfRect();
-//        faceDetector.detectMultiScale(grayMat, faceDetections,1.1, 3, 0);
 //        faceDetector.detectMultiScale(grayMat, faceDetections, 1.1, 3, 0, new Size(50, 50), new Size(130, 130));
-        faceDetector.detectMultiScale(grayMat, faceDetections);
+        faceDetector.detectMultiScale(grayMat, faceDetections,1.1, 3, CV_HAAR_DO_CANNY_PRUNING);
 
         System.out.println(String.format("Detected %s faces", faceDetections.toArray().length));
         for (Rect rect : faceDetections.toArray()) {
@@ -219,8 +218,8 @@ public class ClientTest4 {
     @Test
     @SuppressWarnings("Duplicates")
     public void testCutLogoPos() {
-//        Mat mat = ImageUtils.convertToOrgOpenCvCoreMat(findFrame(500));
-//        showImg(mat);
+//        Mat mat = ImageUtils.convertToOrgOpenCvCoreMat(findFrame(600));
+//        showImg(cut(mat, 140, 70, 110, 110));
 //        Mat small = ImageUtils.cut(mat, 28, 30, 51, 51);
 //        showImg(small);
 
@@ -230,8 +229,7 @@ public class ClientTest4 {
         for (int i = 0; i < 500; i++) {
             try {
                 Mat mat = ImageUtils.convertToOrgOpenCvCoreMat(findFrame(frame));
-                Mat small = ImageUtils.removeBlackEdge(mat);
-                Mat logo = ImageUtils.cut(small, 140, 70, 110, 110);
+                Mat logo = ImageUtils.cut(mat, 140, 70, 110, 110);
                 Mat grayMat = ImageUtils.gray(logo);
                 ImageUtils.save("/tmp/logo4/pos/" + (index++) + ".jpg", resize(grayMat, new Size(33, 33)));
             } catch (Exception e) {
@@ -361,7 +359,7 @@ public class ClientTest4 {
     @SuppressWarnings("Duplicates")
     private Frame findFrame(int frameIndex) {
         Frame frame = null;
-        String fileName = "Z:/tmp/logo4/test2.mp4";
+        String fileName = "Z:/tmp/logo4/test.mp4";
         try (FFmpegFrameGrabber fFmpegFrameGrabber = new FFmpegFrameGrabber(fileName)) {
             fFmpegFrameGrabber.start();
             fFmpegFrameGrabber.setFrameNumber(frameIndex);

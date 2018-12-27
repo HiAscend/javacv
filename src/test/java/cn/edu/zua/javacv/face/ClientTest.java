@@ -1,8 +1,6 @@
 package cn.edu.zua.javacv.face;
 
 import cn.edu.zua.javacv.util.ImageUtils;
-import cn.edu.zua.mytool.core.util.PathUtils;
-import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.FrameGrabber;
@@ -17,7 +15,8 @@ import org.testng.annotations.Test;
 import java.io.*;
 import java.util.Random;
 
-import static org.bytedeco.javacpp.opencv_objdetect.*;
+import static cn.edu.zua.javacv.util.ImageUtils.*;
+import static org.bytedeco.javacpp.opencv_objdetect.CV_HAAR_DO_CANNY_PRUNING;
 
 /**
  * @author ascend
@@ -50,7 +49,7 @@ public class ClientTest {
 
         CascadeClassifier faceDetector = new CascadeClassifier(faceXml);
         Mat image = Imgcodecs.imread("/tmp/face/face8.jpg");
-        Mat grayMat = ImageUtils.gray(image);
+        Mat grayMat = gray(image);
 
         MatOfRect faceDetections = new MatOfRect();
 //        faceDetector.detectMultiScale(grayMat, faceDetections,1.1, 5, 0, new Size(40, 40));
@@ -86,7 +85,7 @@ public class ClientTest {
 
         CascadeClassifier faceDetector = new CascadeClassifier(faceXml);
         Mat image = Imgcodecs.imread("/tmp/face/face8.jpg");
-        Mat grayMat = ImageUtils.gray(image);
+        Mat grayMat = gray(image);
 
         MatOfRect faceDetections = new MatOfRect();
         faceDetector.detectMultiScale(grayMat, faceDetections, 1.1, 5, 0, new Size(40, 40));
@@ -115,12 +114,13 @@ public class ClientTest {
         String faceXml = Client.class.getClassLoader().getResource("data/logo/logo/cascade.xml").getPath().substring(1);
 
         CascadeClassifier faceDetector = new CascadeClassifier(faceXml);
-        Mat image = Imgcodecs.imread("/tmp/logo/tmp/logo3.jpg");
-        Mat grayMat = ImageUtils.gray(image);
+        Mat image = Imgcodecs.imread("/tmp/logo/tmp/logo8.jpg");
+        Mat grayMat = gray(image);
 
         MatOfRect faceDetections = new MatOfRect();
 //        faceDetector.detectMultiScale(grayMat, faceDetections,1.1, 3, 0);
-        faceDetector.detectMultiScale(grayMat, faceDetections, 1.1, 3, 0);
+        // CV_HAAR_DO_CANNY_PRUNING
+        faceDetector.detectMultiScale(grayMat, faceDetections, 1.1, 4, CV_HAAR_DO_CANNY_PRUNING, new Size(90, 50), new Size(120, 80));
 
         System.out.println(String.format("Detected %s faces", faceDetections.toArray().length));
         for (Rect rect : faceDetections.toArray()) {
@@ -142,7 +142,7 @@ public class ClientTest {
         Mat image = Imgcodecs.imread("/tmp/face/face6.jpg");
 
         MatOfRect detections = new MatOfRect();
-        Mat detectorMat = ImageUtils.equalizeHist(ImageUtils.gray(image));
+        Mat detectorMat = ImageUtils.equalizeHist(gray(image));
         detector.detectMultiScale(detectorMat, detections, 1.5, 5, CV_HAAR_DO_CANNY_PRUNING, new Size(40, 40));
 
         System.out.println(String.format("Detected %s eye", detections.toArray().length));
@@ -202,7 +202,7 @@ public class ClientTest {
     @SuppressWarnings("Duplicates")
     public void testCutLogo() {
         Mat logo = Imgcodecs.imread("/tmp/logo/pos/images/logo_40_result.jpg");
-        Mat grayMat = ImageUtils.gray(logo);
+        Mat grayMat = gray(logo);
         int topRow = 0;
         int leftCol = 0;
         // 开始
@@ -219,20 +219,19 @@ public class ClientTest {
     @Test
     @SuppressWarnings("Duplicates")
     public void testCutLogoPos() {
-//        Mat mat = ImageUtils.convertToOrgOpenCvCoreMat(findFrame(500));
-//        showImg(mat);
+//        Mat mat = ImageUtils.convertToOrgOpenCvCoreMat(findFrame(700));
+//        showImg(cut(mat, 26, 30, 102, 52));
 //        Mat small = ImageUtils.cut(mat, 28, 30, 51, 51);
 //        showImg(small);
 
-        int index = 1;
-        int frame = 1000;
+        int index = 200;
+        int frame = 200;
 
-        for (int i = 0; i < 500; i++) {
+        for (int i = 0; i < 200; i++) {
             Mat mat = ImageUtils.convertToOrgOpenCvCoreMat(findFrame(frame));
-            Mat small = ImageUtils.cut(mat, 28, 30, 51, 51);
-            ImageUtils.save("/tmp/logo/pos/" + (index++) + ".jpg", small);
-            ImageUtils.save("/tmp/logo/pos/" + (index++) + ".jpg", ImageUtils.gray(small));
-            frame += 25;
+            Mat small = ImageUtils.cut(mat, 26, 30, 102, 52);
+            ImageUtils.save("/tmp/logo/pos/" + (index++) + ".jpg", gray(resize(small, new Size(51, 26))));
+            frame += 200;
         }
 
     }
@@ -258,18 +257,54 @@ public class ClientTest {
         for (int i = 0; i < 1000; i++) {
             Mat mat = ImageUtils.convertToOrgOpenCvCoreMat(findFrame(frame));
 
-            Mat neg1 = ImageUtils.cut(mat, 320, 120, 60, 60);
-            Mat neg2 = ImageUtils.cut(mat, 320, 180, 60, 60);
-            Mat neg3 = ImageUtils.cut(mat, 320, 240, 60, 60);
+            Mat neg1 = cut(mat, 320, 120, 60, 60);
+            Mat neg2 = cut(mat, 320, 180, 60, 60);
+            Mat neg3 = cut(mat, 320, 240, 60, 60);
 
 
-            ImageUtils.save("/tmp/logo/neg/" + (index++) + ".jpg", ImageUtils.gray(neg1));
-            ImageUtils.save("/tmp/logo/neg/" + (index++) + ".jpg", ImageUtils.gray(neg2));
-            ImageUtils.save("/tmp/logo/neg/" + (index++) + ".jpg", ImageUtils.gray(neg3));
+            ImageUtils.save("/tmp/logo/neg/" + (index++) + ".jpg", gray(neg1));
+            ImageUtils.save("/tmp/logo/neg/" + (index++) + ".jpg", gray(neg2));
+            ImageUtils.save("/tmp/logo/neg/" + (index++) + ".jpg", gray(neg3));
             frame += 25;
         }
 
     }
+
+    @Test
+    @SuppressWarnings("Duplicates")
+    public void testCutLogoNeg2() {
+//        Mat mat = ImageUtils.convertToOrgOpenCvCoreMat(findFrame(2400));
+//        Mat smallMat = ImageUtils.removeBlackEdge(mat);
+//        Mat neg1 = ImageUtils.cut(smallMat, 600, 260, 200, 100);
+//        showImg(ImageUtils.gray(neg1));
+
+        Random random = new Random();
+        int index = 1;
+        int frame = 100;
+        int base = 100;
+        int inc = 200;
+
+        for (int i = 0; i < 500; i++) {
+            try {
+                Mat mat = ImageUtils.convertToOrgOpenCvCoreMat(findFrame(frame));
+                Mat smallMat = ImageUtils.removeBlackEdge(mat);
+                Mat grayMat = gray(smallMat);
+                Mat sunMat1;
+                sunMat1 = cut(grayMat, 130, 85, 500, 390);
+
+                int value = base + random.nextInt(inc);
+                Mat neg1 = resize(sunMat1, new Size(value, value));
+
+                ImageUtils.save("/tmp/logo/neg2/" + (index++) + ".jpg", neg1);
+//                ImageUtils.save("/tmp/neg/sayout_" + (index++) + ".jpg", neg1);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            frame += 100;
+        }
+
+    }
+
 
     /**
      * 从视频中找出指定帧
@@ -279,7 +314,7 @@ public class ClientTest {
     @SuppressWarnings("Duplicates")
     private Frame findFrame(int frameIndex) {
         Frame frame = null;
-        String fileName = "Z:/tmp/logo/test.mp4";
+        String fileName = "Z:/tmp/logo/test2.mp4";
         try (FFmpegFrameGrabber fFmpegFrameGrabber = new FFmpegFrameGrabber(fileName)) {
             fFmpegFrameGrabber.start();
             fFmpegFrameGrabber.setFrameNumber(frameIndex);
@@ -337,7 +372,7 @@ public class ClientTest {
     public void test() throws IOException {
         for (int i = 0; i < 11; i++) {
             Mat mat = Imgcodecs.imread("Z:\\tmp\\logo\\pos\\result_0" + (i + 1) + ".jpg");
-            Mat grayMat = ImageUtils.gray(mat);
+            Mat grayMat = gray(mat);
             ImageUtils.save("/tmp/logo/pos/result_" + (i + 1) + ".jpg", grayMat);
         }
     }
