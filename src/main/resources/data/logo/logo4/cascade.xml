@@ -3,12 +3,12 @@
 <cascade>
   <stageType>BOOST</stageType>
   <featureType>HAAR</featureType>
-  <height>33</height>
-  <width>33</width>
+  <height>40</height>
+  <width>40</width>
   <stageParams>
     <boostType>GAB</boostType>
-    <minHitRate>9.9599999189376831e-01</minHitRate>
-    <maxFalseAlarm>4.3999999761581421e-01</maxFalseAlarm>
+    <minHitRate>9.9699997901916504e-01</minHitRate>
+    <maxFalseAlarm>3.4999999403953552e-01</maxFalseAlarm>
     <weightTrimRate>9.4999998807907104e-01</weightTrimRate>
     <maxDepth>1</maxDepth>
     <maxWeakCount>100</maxWeakCount></stageParams>
@@ -25,7 +25,7 @@
       <weakClassifiers>
         <_>
           <internalNodes>
-            0 -1 0 -6.2516019679605961e-03</internalNodes>
+            0 -1 0 -5.5839316919445992e-03</internalNodes>
           <leafValues>
             1. -1.</leafValues></_></weakClassifiers></_>
     <!-- stage 1 -->
@@ -35,24 +35,22 @@
       <weakClassifiers>
         <_>
           <internalNodes>
-            0 -1 1 2.4480029940605164e-01</internalNodes>
+            0 -1 1 7.7961519360542297e-02</internalNodes>
           <leafValues>
             -1. 1.</leafValues></_></weakClassifiers></_></stages>
   <features>
     <_>
       <rects>
         <_>
-          2 11 8 2 -1.</_>
+          4 14 9 3 -1.</_>
         <_>
-          2 11 4 1 2.</_>
-        <_>
-          6 12 4 1 2.</_></rects>
+          4 15 9 1 3.</_></rects>
       <tilted>0</tilted></_>
     <_>
       <rects>
         <_>
-          3 5 26 13 -1.</_>
+          15 20 18 6 -1.</_>
         <_>
-          16 5 13 13 2.</_></rects>
+          21 20 6 6 3.</_></rects>
       <tilted>0</tilted></_></features></cascade>
 </opencv_storage>

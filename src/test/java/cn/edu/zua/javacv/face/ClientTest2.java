@@ -392,16 +392,16 @@ public class ClientTest2 {
 
     @Test
     public void test2() {
-        File dir = new File("/tmp/neg/car/");
-        int index = 1853;
+        File dir = new File("/tmp/neg/tmp2/");
+        int index = 1873;
         int base = 90;
         int inc = 150;
         Random rand = new Random();
         for (File file : dir.listFiles()) {
             Mat mat = Imgcodecs.imread(file.getAbsolutePath());
             int value = base + rand.nextInt(inc);
-//            save("/tmp/neg/tmp/neg_"+(index++)+".jpg", gray(resize(mat, new Size(value, value))));
-            save("/tmp/neg/tmp2/neg_"+(index++)+".jpg", mat);
+            save("/tmp/neg/tmp2/neg_"+(index++)+".jpg", gray(resize(mat, new Size(value, value))));
+//            save("/tmp/neg/tmp2/neg_"+(index++)+".jpg", mat);
         }
 
     }

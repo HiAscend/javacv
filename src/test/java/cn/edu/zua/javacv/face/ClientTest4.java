@@ -114,7 +114,7 @@ public class ClientTest4 {
         String faceXml = Client.class.getClassLoader().getResource("data/logo/logo4/cascade.xml").getPath().substring(1);
 
         CascadeClassifier faceDetector = new CascadeClassifier(faceXml);
-        Mat image = Imgcodecs.imread("/tmp/logo4/tmp/logo10.jpg");
+        Mat image = Imgcodecs.imread("/tmp/logo4/tmp/logo4.jpg");
         Mat grayMat = ImageUtils.gray(image);
 
         MatOfRect faceDetections = new MatOfRect();
@@ -127,6 +127,25 @@ public class ClientTest4 {
         }
 
         showImg(image);
+    }
+
+    @Test
+    @SuppressWarnings("Duplicates")
+    public void testFace4() {
+        String faceXml = Client.class.getClassLoader().getResource("data/logo/logo4/cascade.xml").getPath().substring(1);
+        CascadeClassifier faceDetector = new CascadeClassifier(faceXml);
+
+        int frame = 100;
+        for (int i = 0; i < 20; i++) {
+            Mat mat = convertToOrgOpenCvCoreMat(findFrame(frame));
+            MatOfRect faceDetections = new MatOfRect();
+            faceDetector.detectMultiScale(gray(mat), faceDetections, 1.1, 3, CV_HAAR_DO_CANNY_PRUNING);
+            for (Rect rect : faceDetections.toArray()) {
+                Imgproc.rectangle(mat, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 255, 0), 2);
+            }
+            showImg(mat, 2);
+            frame += 100;
+        }
     }
 
     /**
@@ -197,6 +216,11 @@ public class ClientTest4 {
         HighGui.waitKey();
     }
 
+    private void showImg(Mat mat, int second) {
+        HighGui.imshow("结果", mat);
+        HighGui.waitKey(second * 1000);
+    }
+
     @Test
     @SuppressWarnings("Duplicates")
     public void testCutLogo() {
@@ -218,8 +242,8 @@ public class ClientTest4 {
     @Test
     @SuppressWarnings("Duplicates")
     public void testCutLogoPos() {
-//        Mat mat = ImageUtils.convertToOrgOpenCvCoreMat(findFrame(600));
-//        showImg(cut(mat, 140, 70, 110, 110));
+//        Mat mat = ImageUtils.convertToOrgOpenCvCoreMat(findFrame(300));
+//        showImg(cut(mat, 135, 65, 120, 120));
 //        Mat small = ImageUtils.cut(mat, 28, 30, 51, 51);
 //        showImg(small);
 
@@ -228,10 +252,10 @@ public class ClientTest4 {
 
         for (int i = 0; i < 500; i++) {
             try {
-                Mat mat = ImageUtils.convertToOrgOpenCvCoreMat(findFrame(frame));
-                Mat logo = ImageUtils.cut(mat, 140, 70, 110, 110);
-                Mat grayMat = ImageUtils.gray(logo);
-                ImageUtils.save("/tmp/logo4/pos/" + (index++) + ".jpg", resize(grayMat, new Size(33, 33)));
+                Mat mat = convertToOrgOpenCvCoreMat(findFrame(frame));
+                Mat logo = cut(mat, 135, 65, 120, 120);
+                Mat grayMat = gray(logo);
+                save("/tmp/logo4/pos/" + (index++) + ".jpg", resize(grayMat, new Size(40, 40)));
             } catch (Exception e) {
                 e.printStackTrace();
             }

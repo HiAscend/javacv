@@ -5,6 +5,8 @@ import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.FrameGrabber;
 import org.opencv.core.*;
+import org.opencv.dnn.Dnn;
+import org.opencv.dnn.Net;
 import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
@@ -114,13 +116,13 @@ public class ClientTest {
         String faceXml = Client.class.getClassLoader().getResource("data/logo/logo/cascade.xml").getPath().substring(1);
 
         CascadeClassifier faceDetector = new CascadeClassifier(faceXml);
-        Mat image = Imgcodecs.imread("/tmp/logo/tmp/logo8.jpg");
+        Mat image = Imgcodecs.imread("/tmp/logo/tmp/logo7.jpg");
         Mat grayMat = gray(image);
 
         MatOfRect faceDetections = new MatOfRect();
 //        faceDetector.detectMultiScale(grayMat, faceDetections,1.1, 3, 0);
         // CV_HAAR_DO_CANNY_PRUNING
-        faceDetector.detectMultiScale(grayMat, faceDetections, 1.1, 4, CV_HAAR_DO_CANNY_PRUNING, new Size(90, 50), new Size(120, 80));
+        faceDetector.detectMultiScale(grayMat, faceDetections, 1.1, 3, CV_HAAR_DO_CANNY_PRUNING);
 
         System.out.println(String.format("Detected %s faces", faceDetections.toArray().length));
         for (Rect rect : faceDetections.toArray()) {
@@ -128,6 +130,25 @@ public class ClientTest {
         }
 
         showImg(image);
+    }
+
+    @Test
+    @SuppressWarnings("Duplicates")
+    public void testFace4() {
+        String faceXml = Client.class.getClassLoader().getResource("data/logo/logo/cascade.xml").getPath().substring(1);
+        CascadeClassifier faceDetector = new CascadeClassifier(faceXml);
+
+        int frame = 2000;
+        for (int i = 0; i < 30; i++) {
+            Mat mat = convertToOrgOpenCvCoreMat(findFrame(frame));
+            MatOfRect faceDetections = new MatOfRect();
+            faceDetector.detectMultiScale(gray(mat), faceDetections, 1.1, 3, CV_HAAR_DO_CANNY_PRUNING, new Size(80, 45), new Size(120, 80));
+            for (Rect rect : faceDetections.toArray()) {
+                Imgproc.rectangle(mat, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 255, 0), 2);
+            }
+            showImg(mat, 2);
+            frame += 100;
+        }
     }
 
     /**
@@ -195,7 +216,12 @@ public class ClientTest {
 
     private void showImg(Mat mat) {
         HighGui.imshow("结果", mat);
-        HighGui.waitKey();
+        HighGui.waitKey(1000);
+    }
+
+    private void showImg(Mat mat, int second) {
+        HighGui.imshow("结果", mat);
+        HighGui.waitKey(second * 1000);
     }
 
     @Test
@@ -381,5 +407,21 @@ public class ClientTest {
     public void test2() {
         Mat mat = ImageUtils.convertToOrgOpenCvCoreMat(findFrame(525));
         showImg(mat);
+
+
+
+    }
+    @Test
+    public void test3() {
+        Mat mat = ImageUtils.convertToOrgOpenCvCoreMat(findFrame(525));
+        showImg(mat);
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+        Net net = Dnn.readNetFromDarknet("/Users/tianyubing/keras-yolo3/yolov3.cfg","/Users/tianyubing/keras-yolo3/yolov3.weights");
+        net.setPreferableBackend(Dnn.DNN_BACKEND_OPENCV);
+        net.setPreferableTarget(Dnn.DNN_TARGET_CPU);
+
+        Mat blob = new Mat();
+        Dnn.blobFromImage(blob,1/255.0,new Size(blob.width(), blob.height()),new Scalar(0,0,0), true, false);
+        net.setInput(blob);
     }
 }
