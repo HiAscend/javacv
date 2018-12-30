@@ -33,6 +33,7 @@ public class AppTest {
 
         HighGui.imshow("result", result);
         HighGui.waitKey();
+        // 测试
     }
 
     @Test
