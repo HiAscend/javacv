@@ -1,12 +1,15 @@
 package cn.edu.zua.javacv.util;
 
+import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.Frame;
+import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.OpenCVFrameConverter;
 import org.opencv.core.*;
 import org.opencv.core.Point;
 import org.opencv.features2d.AKAZE;
 import org.opencv.features2d.BFMatcher;
 import org.opencv.features2d.Features2d;
+import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
@@ -61,6 +64,72 @@ public class ImageUtils {
     public static Mat convertToOrgOpenCvCoreMat(Frame frame) {
         return new OpenCVFrameConverter.ToIplImage().convertToOrgOpenCvCoreMat(frame);
     }
+
+    /**
+     * 从视频中找出指定帧
+     *
+     * @return 指定帧, 如果找不到，返回null
+     */
+    public static Mat findMat(int frameIndex, String videoPath) {
+        Mat retMat = null;
+        Frame frame = findFrame(frameIndex, videoPath);
+        if (frame != null) {
+            retMat = convertToOrgOpenCvCoreMat(frame);
+        }
+        return retMat;
+    }
+
+    /**
+     * 从视频中找出指定帧
+     *
+     * @return 指定帧, 如果找不到，返回null
+     */
+    public static Frame findFrame(int frameIndex, String videoPath) {
+        Frame frame = null;
+        try (FFmpegFrameGrabber fFmpegFrameGrabber = new FFmpegFrameGrabber(videoPath)) {
+            fFmpegFrameGrabber.start();
+            fFmpegFrameGrabber.setFrameNumber(frameIndex);
+            Frame srcFrame = fFmpegFrameGrabber.grabImage();
+            if (srcFrame != null) {
+                frame = srcFrame.clone();
+            }
+        } catch (FrameGrabber.Exception e) {
+            e.printStackTrace();
+        }
+        return frame;
+    }
+
+    /**
+     * 显示图片， 阻塞。默认标题“结果”
+     *
+     * @param mat Mat
+     */
+    public static void showImg(Mat mat) {
+        showImg(mat, "结果", 0);
+    }
+
+    /**
+     * 显示图片，阻塞指定时长。默认标题“结果”
+     *
+     * @param mat    Mat
+     * @param second int
+     */
+    public static void showImg(Mat mat, int second) {
+        showImg(mat, "结果", second);
+    }
+
+    /**
+     * 显示图片与标题，阻塞指定时长
+     *
+     * @param mat    Mat
+     * @param title  标题
+     * @param second int
+     */
+    public static void showImg(Mat mat, String title, int second) {
+        HighGui.imshow(title, mat);
+        HighGui.waitKey(second * 1000);
+    }
+
 
     /**
      * 按照指定的尺寸截取Mat，截取宽高自动计算（对称）。坐标原点为左上角
