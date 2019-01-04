@@ -1,7 +1,6 @@
 package cn.edu.zua.javacv.face;
 
 import cn.edu.zua.mytool.core.util.CharsetUtils;
-
 import org.apache.commons.io.FileUtils;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
@@ -34,11 +33,12 @@ public class LogoTagTest {
         int index = 1;
         // 640X480  new Rect(24, 25, 104, 62)
         // 320X240  new Rect(12, 12, 52, 31)
-        Rect rect = new Rect(12, 12, 52, 31);
+        Rect rect = new Rect(12, 12, 12 + 52, 12 + 31);
 //        Mat mat = findMat(frameIndex, new File(basePath, "video/chongqing3.mp4").getAbsolutePath());
 //        mat = resize(mat, new Size(320, 240));
-//        Imgproc.rectangle(mat, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 255, 0), 2);
+//        Imgproc.rectangle(mat, new Point(rect.x, rect.y), new Point(rect.width, rect.height), new Scalar(0, 255, 0), 2);
 //        showImg(mat);
+
         for (int i = 0; i < 500; i++) {
             try {
                 Mat mat = findMat(frameIndex, new File(basePath, "video/chongqing" + videoIndex + ".mp4").getAbsolutePath());
@@ -68,20 +68,14 @@ public class LogoTagTest {
         int frameIndex = 2;
         int index = 1;
         // 1920X1080  new Rect(105, 70, 390, 80)
-        // 384X216    new Rect(20, 13, 80, 20)
-        /*Rect rect = new Rect(20, 12, 80, 20);
-        Mat mat = findMat(frameIndex, new File(basePath, "video/beijing2.mp4").getAbsolutePath());
-        mat = resize(mat, new Size(384,216));
-        Imgproc.rectangle(mat, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 255, 0), 1);
-        showImg(mat);*/
+        // 384X216    new Rect(20, 12, 20 + 80, 12 + 20)
+        Rect rect = new Rect(20, 12, 20 + 80, 12 + 20);
+//        Mat mat = findMat(frameIndex, new File(basePath, "video/beijing2.mp4").getAbsolutePath());
+//        mat = resize(mat, new Size(384, 216));
+//        Imgproc.rectangle(mat, new Point(rect.x, rect.y), new Point(rect.width, rect.height), new Scalar(0, 255, 0), 1);
+//        showImg(mat);
 
-        Rect rect = new Rect(28, 18, 129, 42);
-        Mat mat = findMat(frameIndex, new File(basePath, "video/beijing2.mp4").getAbsolutePath());
-        mat = resize(mat, new Size(500,281));
-        Imgproc.rectangle(mat, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 255, 0), 1);
-        showImg(mat);
-
-        /*for (int i = 0; i < 500; i++) {
+        for (int i = 0; i < 500; i++) {
             try {
                 Mat mat = findMat(frameIndex, new File(basePath, "video/beijing" + videoIndex + ".mp4").getAbsolutePath());
                 Mat small = resize(mat, new Size(384, 216));
@@ -100,7 +94,7 @@ public class LogoTagTest {
             if (videoIndex > 2) {
                 break;
             }
-        }*/
+        }
     }
 
     @Test
@@ -110,14 +104,14 @@ public class LogoTagTest {
         int frameIndex = 2;
         int index = 1;
         // 1920X1080  new Rect(135, 65, 120, 120)
-        // 384X216    new Rect(25, 11, 26, 26)
-        Rect rect = new Rect(25, 11, 26, 26);
-        Mat mat = findMat(frameIndex, new File(basePath, "video/shanghai3.mp4").getAbsolutePath());
-        mat = resize(mat, new Size(384,216));
-        Imgproc.rectangle(mat, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 255, 0), 1);
-        showImg(mat);
+        // 384X216    new Rect(25, 11, 25 + 26, 11 + 26)
+        Rect rect = new Rect(25, 11, 25 + 26, 11 + 26);
+//        Mat mat = findMat(frameIndex, new File(basePath, "video/shanghai3.mp4").getAbsolutePath());
+//        mat = resize(mat, new Size(384, 216));
+//        Imgproc.rectangle(mat, new Point(rect.x, rect.y), new Point(rect.width, rect.height), new Scalar(0, 255, 0), 1);
+//        showImg(mat);
 
-        /*for (int i = 0; i < 500; i++) {
+        for (int i = 0; i < 500; i++) {
             try {
                 Mat mat = findMat(frameIndex, new File(basePath, "video/shanghai" + videoIndex + ".mp4").getAbsolutePath());
                 Mat small = resize(mat, new Size(384, 216));
@@ -136,7 +130,7 @@ public class LogoTagTest {
             if (videoIndex > 3) {
                 break;
             }
-        }*/
+        }
     }
 
 
@@ -197,7 +191,7 @@ public class LogoTagTest {
             try {
                 Mat mat = findMat(frameIndex, new File(basePath, "video/beijing" + videoIndex + ".mp4").getAbsolutePath());
                 String imageName = "logo_" + index + ".jpg";
-                save(new File(basePath, "test/"+imageName).getAbsolutePath(), mat);
+                save(new File(basePath, "test/" + imageName).getAbsolutePath(), mat);
                 index++;
                 frameIndex += 200;
                 System.out.println("*******************************************************************index:" + index);
@@ -224,7 +218,7 @@ public class LogoTagTest {
             try {
                 Mat mat = findMat(frameIndex, new File(basePath, "video/shanghai" + videoIndex + ".mp4").getAbsolutePath());
                 String imageName = "logo_" + index + ".jpg";
-                save(new File(basePath, "test/"+imageName).getAbsolutePath(), mat);
+                save(new File(basePath, "test/" + imageName).getAbsolutePath(), mat);
                 index++;
                 frameIndex += 200;
                 System.out.println("*******************************************************************index:" + index);
@@ -251,7 +245,7 @@ public class LogoTagTest {
             try {
                 Mat mat = findMat(frameIndex, new File(basePath, "video/chongqing" + videoIndex + ".mp4").getAbsolutePath());
                 String imageName = "logo_" + index + ".jpg";
-                save(new File(basePath, "test/"+imageName).getAbsolutePath(), mat);
+                save(new File(basePath, "test/" + imageName).getAbsolutePath(), mat);
                 index++;
                 frameIndex += 200;
                 System.out.println("*******************************************************************index:" + index);
